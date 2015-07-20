@@ -7,7 +7,7 @@ describe Modifier do
   include SpecHelpers::Fixtures
 
   it "works" do
-    modified = input = read_fixture('performance.data')
+    modified = input = fixture_path('report.csv')
     modification_factor = 1
     cancellaction_factor = 0.4
     modifier = Modifier.new(modification_factor, cancellaction_factor)

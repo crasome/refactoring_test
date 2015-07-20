@@ -146,7 +146,7 @@ class Modifier
   DEFAULT_CSV_OPTIONS = { :col_sep => "\t", :headers => :first_row }
 
   def parse(file)
-    CSV.read(file.strip, DEFAULT_CSV_OPTIONS)
+    CSV.read(file, DEFAULT_CSV_OPTIONS)
   end
 
   def lazy_read(file)
