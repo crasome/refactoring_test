@@ -1,6 +1,7 @@
 require File.expand_path('lib/combiner',File.dirname(__FILE__))
 require 'csv'
 require 'date'
+require 'report/sorter'
 
 def latest(name)
   files = Dir["#{ ENV["HOME"] }/workspace/*#{name}*.txt"]
@@ -41,9 +42,27 @@ class Modifier
   LINES_PER_FILE = 120000
 
   def self.performance_report(input:, output:, sales_factor:, cancellation_factor:)
+    csv_table = csv_lazy_read input
+
+    sorted_report = Report::Sorter.new(csv_table).sort 'Clicks'
+    sorted_report_path = "#{input}.sorted"
+
+    write sorted_report_path, sorted_report
+
     modifier = new(sales_factor, cancellation_factor)
-    modifier.sort input
-    modifier.modify output, input
+    modifier.modify output, sorted_report
+  end
+
+  def self.csv_lazy_read(input, options: DEFAULT_CSV_OPTIONS)
+    CSV.read input, options
+  end
+
+  def self.write(output, csv_table, options: DEFAULT_CSV_OPTIONS)
+    File.open(output, 'w:UTF-8') { |file| file.write(csv_table.to_csv options)}
+  end
+
+  def enumerator_for(csv_table)
+    csv_table.enum_for :each
   end
 
 
@@ -52,14 +71,10 @@ class Modifier
     @cancellation_factor = cancellation_factor
   end
 
-  def modify(output, input)
-    input = sort(input)
-
-    input_enumerator = lazy_read(input)
-
+  def modify(output, data)
     combiner = Combiner.new do |value|
       value[KEYWORD_UNIQUE_ID]
-    end.combine(input_enumerator)
+    end.combine(enumerator_for data)
 
     merger = Enumerator.new do |yielder|
       while true
@@ -164,23 +179,4 @@ class Modifier
     end
   end
 
-  def write(content, headers, output)
-    CSV.open(output, "wb", { :col_sep => "\t", :headers => :first_row, :row_sep => "\r\n" }) do |csv|
-      csv << headers
-      content.each do |row|
-        csv << row
-      end
-    end
-  end
-
-  public
-  def sort(file)
-    output = "#{file}.sorted"
-    content_as_table = parse(file)
-    headers = content_as_table.headers
-    index_of_key = headers.index('Clicks')
-    content = content_as_table.sort_by { |a| -a[index_of_key].to_i }
-    write(content, headers, output)
-    return output
-  end
 end
