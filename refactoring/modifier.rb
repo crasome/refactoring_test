@@ -40,6 +40,13 @@ class Modifier
 
   LINES_PER_FILE = 120000
 
+  def self.performance_report(input:, output:, sales_factor:, cancellation_factor:)
+    modifier = new(sales_factor, cancellation_factor)
+    modifier.sort input
+    modifier.modify output, input
+  end
+
+
   def initialize(saleamount_factor, cancellation_factor)
     @saleamount_factor = saleamount_factor
     @cancellation_factor = cancellation_factor

@@ -17,13 +17,26 @@ describe Modifier do
 
 
   it "works" do
-    input = report_path
     modification_factor = 1
     cancellaction_factor = 0.4
     modifier = Modifier.new(modification_factor, cancellaction_factor)
-    modifier.modify(modified_path, input)
+    modifier.modify(modified_path, report_path)
 
     expect(sorted_output).to eq reference_sorted_output
     expect(modified_output).to eq reference_modified_output
+  end
+
+  describe 'performance_report' do
+    it "sorts input data" do
+      described_class.performance_report(
+        input: report_path,
+        output: modified_path,
+        sales_factor: 1,
+        cancellation_factor: 0.4,
+      )
+
+      expect(sorted_output).to eq reference_sorted_output
+      expect(modified_output).to eq reference_modified_output
+    end
   end
 end
