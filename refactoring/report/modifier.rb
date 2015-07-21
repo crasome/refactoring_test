@@ -45,16 +45,15 @@ module Report
       csv_table.enum_for :each
     end
 
-
     def initialize(saleamount_factor, cancellation_factor)
       @saleamount_factor = saleamount_factor
       @cancellation_factor = cancellation_factor
     end
 
-    def modify(output, data)
+    def modify(output, csv_table)
       combiner = Combiner.new do |value|
         value[KEYWORD_UNIQUE_ID]
-      end.combine(enumerator_for data)
+      end.combine(enumerator_for csv_table)
 
       merger = Enumerator.new do |yielder|
         while true
@@ -144,19 +143,5 @@ module Report
       end
       result
     end
-
-
-    def parse(file)
-      CSV.read(file, DEFAULT_CSV_OPTIONS)
-    end
-
-    def lazy_read(file)
-      Enumerator.new do |yielder|
-        CSV.foreach(file, DEFAULT_CSV_OPTIONS) do |row|
-          yielder.yield(row)
-        end
-      end
-    end
-
   end
 end
